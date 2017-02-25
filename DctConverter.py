@@ -18,9 +18,15 @@ VOWELS     = 0x007C00
 RIGHT_HAND = 0x0003FF
 
 class OutputRTF(object):
+	def start(self):
+		print '(start)'
+
 	# this does not yet output RTF; it's a stub
 	def output(self, steno, translation):
 		print '>', steno, '>', translation
+
+	def finish(self):
+		print '(finish)'
 
 class StenoDecoder(object):
 	def __init__(self,
@@ -83,12 +89,14 @@ class DctConverter(object):
 		self.output_handler = output_handler or OutputRTF()
 		self.steno_decoder = steno_decoder or StenoDecoder()
 
+
 		# FIXME: we need to address the columns by name, not number
 
 		# FIXME: header row handling should be more elegant than this!
 		self.input_dictionary.next()
 
 	def translate(self):
+		self.output_handler.start()
 		for row in self.input_dictionary:
 			steno = self.steno_decoder.decode(row[0])
 			translation = row[1]
@@ -97,6 +105,8 @@ class DctConverter(object):
 			# FIXME we need to honour some flags in row[2] too
 
 			self.output_handler.output(steno, translation)
+
+		self.output_handler.finish()
 
 if __name__=='__main__':
 	demo = DctConverter('old/dictionaries/stened.dct')
