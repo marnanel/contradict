@@ -93,6 +93,9 @@ class DctConverter(object):
 			steno = self.steno_decoder.decode(row[0])
 			translation = row[1]
 
+			# FIXME tidy up "translation" (remove macros etc)
+			# FIXME we need to honour some flags in row[2] too
+
 			self.output_handler.output(steno, translation)
 
 if __name__=='__main__':
