@@ -17,16 +17,22 @@ DICTIONARY_TABLE_NAME = 'dictionary'
 VOWELS     = 0x007C00
 RIGHT_HAND = 0x0003FF
 
+# FIXME this does not do escaping yet
+# FIXME this should write out to a filehandle, not print
+# FIXME also note that rtf files have CRLF line-endings
 class OutputRTF(object):
 	def start(self):
-		print '(start)'
+		# we need to think of a better name for this
+		print r'{\rtf1\ansi{\*\cxrev100}\cxdict{\*\cxsystem dct2rtf}{\stylesheet{\s0 Normal;}}'
 
-	# this does not yet output RTF; it's a stub
 	def output(self, steno, translation):
-		print '>', steno, '>', translation
+		print r'{\*\cxs %(steno)s}%(translation)s' % {
+			'steno': steno,
+			'translation': translation,
+		}
 
 	def finish(self):
-		print '(finish)'
+		print '}'
 
 class StenoDecoder(object):
 	def __init__(self,
