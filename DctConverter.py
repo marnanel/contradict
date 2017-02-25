@@ -5,6 +5,7 @@ import csv
 DICTIONARY_TABLE_NAME = 'dictionary'
 
 class OutputRTF(object):
+	# this does not yet output RTF; it's a stub
 	def output(self, steno, translation):
 		print '>', steno, '>', translation
 
@@ -18,23 +19,23 @@ class StenoDecoder(object):
 		self.keys = keys
 
 	def decode(self, s):
-		result = ''
+		result = []
 
 		# FIXME add hyphen
 		# FIXME error handling
 
 		while s:
+			result.append('')
 			stroke = int(s[:6], 16)
 
 			for i in self.keys:
 				if stroke & 0x800000:
-					result += i
+					result[-1] += i
 				stroke <<= 1
 
-			result += '/'
 			s = s[6:]
 
-		return result
+		return '/'.join(result)
 
 class DctConverter(object):
 	def __init__(self,
