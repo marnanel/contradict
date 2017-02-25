@@ -52,7 +52,6 @@ class StenoDecoder(object):
 	def decode(self, s):
 		result = []
 
-		# FIXME add hyphen
 		# FIXME error handling
 
 		while s:
@@ -100,7 +99,6 @@ class DctConverter(object):
 
 		self.output_handler = output_handler or OutputRTF()
 		self.steno_decoder = steno_decoder or StenoDecoder()
-
 
 		# FIXME: we need to address the columns by name, not number
 
