@@ -1,6 +1,7 @@
 import subprocess
 import os.path
 import csv
+import sys
 
 DICTIONARY_TABLE_NAME = 'dictionary'
 
@@ -18,21 +19,26 @@ VOWELS     = 0x007C00
 RIGHT_HAND = 0x0003FF
 
 # FIXME this does not do escaping yet
-# FIXME this should write out to a filehandle, not print
-# FIXME also note that rtf files have CRLF line-endings
 class OutputRTF(object):
+
+	def __init__(self, fh=sys.stdout):
+		self.fh = fh
+
 	def start(self):
 		# we need to think of a better name for this
-		print r'{\rtf1\ansi{\*\cxrev100}\cxdict{\*\cxsystem dct2rtf}{\stylesheet{\s0 Normal;}}'
+		self.fh.write(r'{\rtf1\ansi{\*\cxrev100}'+
+			r'\cxdict{\*\cxsystem dct2rtf}'+
+			r'{\stylesheet{\s0 Normal;}}'+
+			'\r\n')
 
 	def output(self, steno, translation):
-		print r'{\*\cxs %(steno)s}%(translation)s' % {
+		self.fh.write(r'{\*\cxs %(steno)s}%(translation)s' % {
 			'steno': steno,
 			'translation': translation,
-		}
+		} + '\r\n')
 
 	def finish(self):
-		print '}'
+		print r'}' + '\r\n'
 
 class StenoDecoder(object):
 	def __init__(self,
