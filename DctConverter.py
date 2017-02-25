@@ -18,11 +18,15 @@ DICTIONARY_TABLE_NAME = 'dictionary'
 VOWELS     = 0x007C00
 RIGHT_HAND = 0x0003FF
 
-# FIXME this does not do escaping yet
 class OutputRTF(object):
 
 	def __init__(self, fh=sys.stdout):
 		self.fh = fh
+
+	def _rtf_escape(self, s):
+		for c in r'\{}':
+			s = s.replace(c, '\\'+c)
+		return s
 
 	def start(self):
 		# we need to think of a better name for this
@@ -33,8 +37,8 @@ class OutputRTF(object):
 
 	def output(self, steno, translation):
 		self.fh.write(r'{\*\cxs %(steno)s}%(translation)s' % {
-			'steno': steno,
-			'translation': translation,
+			'steno': self._rtf_escape(steno),
+			'translation': self._rtf_escape(translation),
 		} + '\r\n')
 
 	def finish(self):
