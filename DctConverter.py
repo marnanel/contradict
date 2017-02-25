@@ -4,6 +4,19 @@ import csv
 
 DICTIONARY_TABLE_NAME = 'dictionary'
 
+# This is steno-specific, so we want to rethink
+# this if we do palantype etc here.
+#
+# We need a hyphen if there are no vowels or * present,
+# but there are right-hand keys present.
+#
+# So the bitmasks are:
+#   ?#ST KPWH RAO* EUFR PBLG TSDZ
+#              111 11              - vowels and *
+#                    11 1111 1111  - right-hand keys
+VOWELS     = 0x007C00
+RIGHT_HAND = 0x0003FF
+
 class OutputRTF(object):
 	# this does not yet output RTF; it's a stub
 	def output(self, steno, translation):
@@ -13,7 +26,7 @@ class StenoDecoder(object):
 	def __init__(self,
 		# FIXME: what is the leftmost char,
 		# and what should we do if it occurs?
-		keys = '?#STKPWHRAO*EUFRPBLGTSDZ',
+		keys = '?#STKPWHRAO*EU-FRPBLGTSDZ',
 		):
 
 		self.keys = keys
@@ -28,10 +41,16 @@ class StenoDecoder(object):
 			result.append('')
 			stroke = int(s[:6], 16)
 
+			needs_hyphen = (stroke & RIGHT_HAND) and not (stroke & VOWELS)
+
 			for i in self.keys:
-				if stroke & 0x800000:
-					result[-1] += i
-				stroke <<= 1
+				if i=='-':
+					if needs_hyphen:
+						result[-1] += '-'
+				else:
+					if stroke & 0x800000:
+						result[-1] += i
+					stroke <<= 1
 
 			s = s[6:]
 
