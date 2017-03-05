@@ -15,12 +15,9 @@ FORMATS = [
 	]
 
 def _random_filename():
-	return os.path.join(
-		MEDIA_ROOT,
-		''.join(
+	return ''.join(
 		[hex(random.randrange(16))[2]
 			for i in range(10)])
-		)
 
 def _filestore_filename(request):
 	return os.path.join(MEDIA_ROOT,
