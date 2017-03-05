@@ -1,0 +1,3 @@
+class StenoDict(object):
+	pass
+
