@@ -116,5 +116,4 @@ def root_view(request):
 		if not render_vars.has_key(field):
 			render_vars[field] = value
 
-	render_vars['text'] = repr(render_vars)
 	return render(request, 'root_page.html', render_vars)
