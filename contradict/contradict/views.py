@@ -65,12 +65,12 @@ def _handle_upload(request):
 	dformat_class = _find_format(request)
 
 	if dformat_class is None:
-		request_vars['unknown-format'] = True
+		request.session['unknown_format'] = True
 		return
 
 	dformat = dformat_class()
 
-	request.session['format-name'] = dformat.title()
+	request.session['dict_format'] = dformat.title()
 
 def root_view(request):
 
@@ -94,7 +94,7 @@ def root_view(request):
 	# if they don't, they need the upload form.
 
 	if request.session.has_key('our_id') and \
-		os.path.exists(_filestore_filename(request)):
+		not os.path.exists(_filestore_filename(request)):
 
 			# they HAD a file; we deleted it
 
@@ -119,4 +119,5 @@ def root_view(request):
 		if not render_vars.has_key(field):
 			render_vars[field] = value
 
+	render_vars['text'] = repr(render_vars)
 	return render(request, 'root_page.html', render_vars)

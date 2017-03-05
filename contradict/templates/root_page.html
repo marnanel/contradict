@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Theme Template for Bootstrap</title>
+    <title>Convert your steno dictionary</title>
 
     <!-- Bootstrap core CSS -->
     <link href="{% static "bootstrap.css" %}" rel="stylesheet">
@@ -28,20 +28,57 @@
       <div class="jumbotron container-fluid">
 
 	<div class="col-md-3" />
-	<img src="{% static "steno-dude.jpg" %}" class="img-responsive" />
+<a href="http://www.openbeelden.nl/media/22262/Demonstratie_met_een_stenotypemachine"><img src="{% static "steno-dude.jpg" %}" class="img-responsive" /></a>
 	</div>
 
 	<div class="col-md-9">
+
+{% if uploaded %}
+      <div class="alert alert-success" role="alert">
+	Dictionary uploaded!
+      </div>
+{% endif %}
+
+{% if deleted %}
+      <div class="alert alert-danger" role="alert">
+	You <em>did</em> upload <b>{{ deleted }}</b>, but
+	it's been deleted on the server.
+	Upload it again, and let's have another go.
+      </div>
+{% endif %}
+
+{% if unknown_format %}
+      <div class="alert alert-danger" role="alert">
+	You uploaded a file, but it wasn't in any format I know how to convert.
+	Sorry about that. Give it another go?
+      </div>
+{% endif %}
+
+{% if our_id %}
+      <div class="alert alert-info" role="alert">
+You have uploaded: <b>{{ their_name }}</b>
+({{ dict_size }} bytes).
+Format: {{ dict_format }}
+      </div>
+{% endif %}
+
         <p>
 		Convert your steno dictionary 
 		to JSON or RTF.
+	</p>
+
+{% if form %}
+<p>
 <form action="/" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form }}
     <input type="submit" value="Submit" />
 </form>
+</p>
+{% endif %}
 
-	</p>
+{{ text }}
+
 	</div>
       </div>
 </div>
