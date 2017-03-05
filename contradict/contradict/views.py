@@ -43,12 +43,6 @@ def _find_format(request):
 	return None
 
 def _handle_upload(request):
-	# FIXME: here we scan the file
-	# and possibly convert it to json
-
-	# Returns some kind of description of whether it worked!
-	# XXX make that less vague
-
 	uploaded_file = request.FILES.get('dictionary')
 	file_id = _random_filename()
 
