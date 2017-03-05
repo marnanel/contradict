@@ -67,6 +67,21 @@ Format: {{ dict_format }}
 		to JSON or RTF.
 	</p>
 
+
+{% if our_id %}
+<div class="btn-group" role="group" aria-label="Format for downloading">
+  <button type="button" class="btn btn-default">Download as JSON</button>
+  <button type="button" class="btn btn-default">Download as RTF</button>
+</div>
+
+<p>Or you can start again from the beginning.</p>
+
+<div class="btn-group" role="group">
+  <button type="button" class="btn btn-default">Start again</button>
+</div>
+
+{% endif %}
+
 {% if form %}
 <p>
 <form action="/" method="post" enctype="multipart/form-data">
