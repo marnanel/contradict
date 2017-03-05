@@ -1,7 +1,11 @@
 body, html {
-	background-color: #ffeaa9;
+	background-color: #1b170b;
 }
 
 img {
 	border-radius: 50em;
+}
+
+.jumbotron {
+	border-radius: 3em;
 }
