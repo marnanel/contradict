@@ -63,14 +63,14 @@ Format: {{ dict_format }}
 {% endif %}
 
 {% if our_id %}
-<div class="btn-group" role="group" aria-label="Format for downloading">
-  <button type="button" class="btn btn-default">Download as JSON</button>
-  <button type="button" class="btn btn-default">Download as RTF</button>
+<div class="well" role="group" aria-label="Format for downloading">
+<p>What format would you like to convert to?</p>
+{% for target, name in download_formats %}
+<a href="{{ target }}" class="btn btn-default">{{ name }}</a>
+{% endfor %}
 </div>
 
-<div class="btn-group" role="group">
-  <button type="button" class="btn btn-default">Start again</button>
-</div>
+<a href="/logout" class="btn btn-default">Start again</a>
 
 {% endif %}
 

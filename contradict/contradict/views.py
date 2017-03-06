@@ -63,6 +63,11 @@ def _handle_upload(request):
 
 	request.session['dict_format'] = dformat.title()
 
+def _download_formats():
+
+	# FIXME "can_save_to_file" etc really should be a class method
+	return [(x().keyword(), x().title()) for x in FORMATS if x().can_save_to_file()]
+
 def root_view(request):
 
 	render_vars = {}
@@ -95,16 +100,37 @@ def root_view(request):
 
 	if request.session.has_key('our_id'):
 
-		# they do have a file
+		# they do have a file.
+		# check their file has a name!
 
-		render_vars['our_id'] = request.session['our_id']
-		render_vars['their_name'] = request.session['their_name']
+		their_name = request.session['their_name']
+
+		if not their_name:
+			# shouldn't happen, but just in case...
+			their_name = request.session['their_name'] = 'dictionary'
+
+		# right, now we have to adjust download_formats
+		# so that the links are to "whatever.json" etc.
+
+		if '.' in their_name:
+			name_without_extension = their_name[:their_name.rindex('.')]
+		else:
+			name_without_extension = their_name
+
+		render_vars['download_formats'] = [
+			(name_without_extension+'.'+keyword, title)
+			for (keyword, title)
+			in _download_formats()
+			]
 	else:
 
 		# they don't have a file;
 		# let them upload one
 
 		render_vars['form'] = DictionaryUploadForm()
+
+	# Copy anything remaining in request.session (for which
+	# we don't already have a value) into render_vars.
 
 	for (field, value) in request.session.items():
 		if not render_vars.has_key(field):

@@ -36,6 +36,9 @@ class JsonDict(StenoDict):
 		f.close()
 		return result
 
+	def can_save_to_file(self):
+		return True
+
 	def save_to_file(self, filename, contents):
 		f = codecs.open(filename, 'w', encoding='utf-8')
 		json.dump(f, contents,
