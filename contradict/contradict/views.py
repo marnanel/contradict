@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from .forms import DictionaryUploadForm
 from .settings import MEDIA_ROOT
 import os
@@ -155,11 +155,16 @@ def root_view(request):
 
 def download_view(request, filename):
 
+	dformat = None
+
 	for (name, title, keyword) in request.session['download_formats']:
 		if name==filename:
-			raise ValueError('Got '+keyword)
+			for f in FORMATS:
+				if f.keyword()==keyword:
+					dformat = f
+					break
 
-	raise ValueError('not on offer')
+	raise ValueError('Got '+dformat)
 
 def logout_view(request):
 	request.session.clear()
