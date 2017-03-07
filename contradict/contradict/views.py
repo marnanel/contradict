@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import HttpResponseRedirect
 from .forms import DictionaryUploadForm
 from .settings import MEDIA_ROOT
 import os
@@ -147,4 +148,5 @@ def download_view(request, filename):
 	raise ValueError('not on offer')
 
 def logout_view(request):
-	raise ValueError('not yet implemented')
+	request.session.clear()
+	return HttpResponseRedirect('/')
