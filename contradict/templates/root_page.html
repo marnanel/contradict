@@ -33,7 +33,7 @@
 
 	<div class="col-md-9">
 
-{% if uploaded %}
+{% if uploaded and our_id %}
       <div class="alert alert-success" role="alert">
 	Dictionary uploaded!
       </div>
@@ -44,6 +44,13 @@
 	You <em>did</em> upload <b>{{ deleted }}</b>, but
 	it's been deleted on the server.
 	Upload it again, and let's have another go.
+      </div>
+{% endif %}
+
+{% if general_error %}
+      <div class="alert alert-danger" role="alert">
+	{{ general_error }}
+	Sorry about that. Give it another go?
       </div>
 {% endif %}
 

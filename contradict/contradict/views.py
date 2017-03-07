@@ -67,11 +67,16 @@ def _handle_upload(request):
 
 	if dformat is None:
 		request.session['unknown_format'] = True
+		del request.session['our_id']
 		return
 
 	request.session['dict_format'] = dformat.title()
 
-	_normalise_upload(dformat, request)
+	try:
+		_normalise_upload(dformat, request)
+	except ValueError, ve:
+		request.session['general_error'] = ve.message
+		del request.session['our_id']
 
 def _download_formats(basename):
 

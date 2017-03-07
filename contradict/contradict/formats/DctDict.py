@@ -6,7 +6,8 @@ import csv
 import sys
 from contradict.settings import MDB_EXPORT_BINARY
 
-DICTIONARY_TABLE_NAME = 'dictionary'
+DICTIONARY_TABLE_NAME = 'dictionwary'
+DICTIONARY_TABLE_COLUMNS = 'Steno,English,Flags,Date,TranCount,LastEditedDate'
 
 # This is steno-specific, so we want to rethink
 # this if we do palantype etc here.
@@ -79,15 +80,20 @@ class DctDict(StenoDict):
 			DICTIONARY_TABLE_NAME],
 
 			stdout=subprocess.PIPE,
+			stderr=subprocess.STDOUT,
 			close_fds=True)
 
 		# FIXME handle error cases:
 		#  - mdb_export_binary does not exist
 		#  - filename does not contain the right table
 
-		input_dictionary = csv.reader(mdb_export.stdout)
+		first_line = mdb_export.stdout.readline().strip()
 
-		# FIXME: we need to address the columns by name, not number
+		if first_line != DICTIONARY_TABLE_COLUMNS:
+			mdb_export.kill()
+			raise ValueError("The dictionary was not in the expected format.")
+
+		input_dictionary = csv.reader(mdb_export.stdout)
 
 		# FIXME: header row handling should be more elegant than this!
 		input_dictionary.next()
