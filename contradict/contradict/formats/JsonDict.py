@@ -4,13 +4,16 @@ import codecs
 
 class JsonDict(StenoDict):
 
-	def keyword(self):
+	@classmethod
+	def keyword(cls):
 		return 'json'
 
-	def title(self):
+	@classmethod
+	def title(cls):
 		return 'JSON dictionary'
 
-	def can_handle(self, fh):
+	@classmethod
+	def can_handle(cls, fh):
 		byte = fh.read(1)
 		if byte!='{':
 			return False
@@ -30,16 +33,18 @@ class JsonDict(StenoDict):
 
 			return False
 
-	def load_from_file(self, filename):
+	@classmethod
+	def load_from_file(cls, filename):
 		f = codecs.open(filename, 'r', encoding='utf-8')
 		result = json.load(f)
 		f.close()
 		return result
 
-	def can_save_to_file(self):
+	@classmethod
+	def can_save_to_file(cls):
 		return True
 
-	def save_to_file(self, filename, contents):
+	def save_to_file(cls, filename, contents):
 		f = codecs.open(filename, 'w', encoding='utf-8')
 		json.dump(f, contents,
 			sort_keys = True,

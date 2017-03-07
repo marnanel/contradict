@@ -36,7 +36,7 @@ def _find_format(request):
 	fh = open(_filestore_filename(request), 'rb')
 
 	for dformat in FORMATS:
-		if dformat().can_handle(fh):
+		if dformat.can_handle(fh):
 			fh.close()
 			return dformat
 
@@ -66,12 +66,11 @@ def _handle_upload(request):
 
 def _download_formats(basename):
 
-	# FIXME "can_save_to_file" etc really should be a class method
 	return [(
-		basename+'.'+x().keyword(),
-		x().title(),
-		x().keyword(),
-		) for x in FORMATS if x().can_save_to_file()]
+		basename+'.'+x.keyword(),
+		x.title(),
+		x.keyword(),
+		) for x in FORMATS if x.can_save_to_file()]
 
 def root_view(request):
 

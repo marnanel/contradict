@@ -2,23 +2,29 @@ from contradict.formats.StenoDict import StenoDict
 
 class RtfDict(StenoDict):
 
-	def keyword(self):
+	@classmethod
+	def keyword(cls):
 		return 'rtf'
 
-	def title(self):
+	@classmethod
+	def title(cls):
 		return 'RTF dictionary'
 
-	def can_handle(self, fh):
+	@classmethod
+	def can_handle(cls, fh):
 		if fh.read(6) == '{\\rtf1':
 			return True
 		else:
 			return False
 
-	def load_from_file(self, filename):
+	@classmethod
+	def load_from_file(cls, filename):
 		pass
 
-	def can_save_to_file(self):
+	@classmethod
+	def can_save_to_file(cls):
 		return True
 
-	def save_to_file(self, filename):
+	@classmethod
+	def save_to_file(cls, filename):
 		pass

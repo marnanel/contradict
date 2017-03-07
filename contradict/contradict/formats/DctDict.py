@@ -2,13 +2,16 @@ from contradict.formats.StenoDict import StenoDict
 
 class DctDict(StenoDict):
 
-	def keyword(self):
+	@classmethod
+	def keyword(cls):
 		return 'dct'
 
-	def title(self):
+	@classmethod
+	def title(cls):
 		return 'DCT dictionary'
 
-	def can_handle(self, fh):
+	@classmethod
+	def can_handle(cls, fh):
 		magicNumber = fh.read(19)
 		if magicNumber in (
 			'\x00\x01\x00\x00Standard Jet DB',
@@ -18,11 +21,14 @@ class DctDict(StenoDict):
 
 		return False
 
-	def load_from_file(self, filename):
+	@classmethod
+	def load_from_file(cls, filename):
 		pass
 
-	def can_save_to_file(self):
+	@classmethod
+	def can_save_to_file(cls):
 		return False
 
-	def save_to_file(self, filename):
+	@classmethod
+	def save_to_file(cls, filename):
 		raise ValueError("Can't write to .dct dictionaries")
