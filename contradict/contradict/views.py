@@ -54,13 +54,11 @@ def _handle_upload(request):
 	_store_dictionary(uploaded_file, request)
 
 	# now, what kind of dictionary do we have?
-	dformat_class = _find_format(request)
+	dformat = _find_format(request)
 
-	if dformat_class is None:
+	if dformat is None:
 		request.session['unknown_format'] = True
 		return
-
-	dformat = dformat_class()
 
 	request.session['dict_format'] = dformat.title()
 
