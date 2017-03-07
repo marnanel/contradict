@@ -117,7 +117,7 @@ def root_view(request):
 		else:
 			name_without_extension = their_name
 
-		render_vars['download_formats'] = [
+		request.session['download_formats'] = [
 			(name_without_extension+'.'+keyword, title)
 			for (keyword, title)
 			in _download_formats()
@@ -138,8 +138,13 @@ def root_view(request):
 
 	return render(request, 'root_page.html', render_vars)
 
-def download_view(request, filename, extension):
-	raise ValueError('not yet implemented')
+def download_view(request, filename):
+
+	for (name, title) in request.session['download_formats']:
+		if name==filename:
+			raise ValueError('Got '+name)
+
+	raise ValueError('not on offer')
 
 def logout_view(request):
 	raise ValueError('not yet implemented')
