@@ -15,6 +15,8 @@ FORMATS = [
 		JsonDict,
 	]
 
+NORMALISED_FORMAT = JsonDict
+
 def _random_filename():
 	return ''.join(
 		[hex(random.randrange(16))[2]
@@ -43,6 +45,13 @@ def _find_format(request):
 	fh.close()
 	return None
 
+def _normalise_upload(dformat, request):
+	filename = _filestore_filename(request)
+	temp_filename = filename+'.1'
+
+	contents = dformat.load_from_file(filename)
+	NORMALISED_FORMAT.save_to_file(temp_filename, contents)
+
 def _handle_upload(request):
 	uploaded_file = request.FILES.get('dictionary')
 	file_id = _random_filename()
@@ -61,6 +70,8 @@ def _handle_upload(request):
 		return
 
 	request.session['dict_format'] = dformat.title()
+
+	_normalise_upload(dformat, request)
 
 def _download_formats(basename):
 
