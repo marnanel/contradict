@@ -10,6 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
+########################
+# contradict-specific settings
+
+# Path to the "mdb-export" binary, part of mdbtools.
+# We have to do this in an external process because
+# of a bug: https://github.com/brianb/mdbtools/issues/56
+
+MDB_EXPORT_BINARY = '/usr/bin/mdb-export'
+
+########################
+
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
