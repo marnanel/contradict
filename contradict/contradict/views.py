@@ -64,10 +64,14 @@ def _handle_upload(request):
 
 	request.session['dict_format'] = dformat.title()
 
-def _download_formats():
+def _download_formats(basename):
 
 	# FIXME "can_save_to_file" etc really should be a class method
-	return [(x().keyword(), x().title()) for x in FORMATS if x().can_save_to_file()]
+	return [(
+		basename+'.'+x().keyword(),
+		x().title(),
+		x().keyword(),
+		) for x in FORMATS if x().can_save_to_file()]
 
 def root_view(request):
 
@@ -118,11 +122,8 @@ def root_view(request):
 		else:
 			name_without_extension = their_name
 
-		request.session['download_formats'] = [
-			(name_without_extension+'.'+keyword, title)
-			for (keyword, title)
-			in _download_formats()
-			]
+		
+		request.session['download_formats'] = _download_formats(name_without_extension)
 	else:
 
 		# they don't have a file;
@@ -141,9 +142,9 @@ def root_view(request):
 
 def download_view(request, filename):
 
-	for (name, title) in request.session['download_formats']:
+	for (name, title, keyword) in request.session['download_formats']:
 		if name==filename:
-			raise ValueError('Got '+name)
+			raise ValueError('Got '+keyword)
 
 	raise ValueError('not on offer')
 

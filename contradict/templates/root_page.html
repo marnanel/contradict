@@ -65,7 +65,7 @@ Format: {{ dict_format }}
 {% if our_id %}
 <div class="well" role="group" aria-label="Format for downloading">
 <p>What format would you like to convert to?</p>
-{% for target, name in download_formats %}
+{% for target, name, keyword in download_formats %}
 <a href="{{ target }}" class="btn btn-default">{{ name }}</a>
 {% endfor %}
 </div>
