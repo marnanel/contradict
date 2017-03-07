@@ -137,3 +137,9 @@ def root_view(request):
 			render_vars[field] = value
 
 	return render(request, 'root_page.html', render_vars)
+
+def download_view(request, filename, extension):
+	raise ValueError('not yet implemented')
+
+def logout_view(request):
+	raise ValueError('not yet implemented')
