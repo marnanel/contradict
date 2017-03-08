@@ -52,6 +52,8 @@ def _normalise_upload(dformat, request):
 	contents = dformat.load_from_file(filename)
 	NORMALISED_FORMAT.save_to_file(temp_filename, contents)
 
+	os.rename(temp_filename, filename)
+
 def _handle_upload(request):
 	uploaded_file = request.FILES.get('dictionary')
 	file_id = _random_filename()
@@ -72,11 +74,7 @@ def _handle_upload(request):
 
 	request.session['dict_format'] = dformat.title()
 
-	try:
-		_normalise_upload(dformat, request)
-	except ValueError, ve:
-		request.session['general_error'] = ve.message
-		del request.session['our_id']
+	_normalise_upload(dformat, request)
 
 def _download_formats(basename):
 
@@ -100,8 +98,11 @@ def root_view(request):
 
 			# yes, they're uploading.
 
-			_handle_upload(request)
-			render_vars['uploaded'] = True
+			try:
+				_handle_upload(request)
+				render_vars['uploaded'] = True
+			except ValueError, ve:
+				render_vars['general_error'] = ve.message
 
 	# now, either they have a file or they don't.
 	# if they do, show some information about it.
@@ -127,14 +128,10 @@ def root_view(request):
 			# shouldn't happen, but just in case...
 			their_name = request.session['their_name'] = 'dictionary'
 
-		# right, now we have to adjust download_formats
-		# so that the links are to "whatever.json" etc.
-
 		if '.' in their_name:
 			name_without_extension = their_name[:their_name.rindex('.')]
 		else:
 			name_without_extension = their_name
-
 		
 		request.session['download_formats'] = _download_formats(name_without_extension)
 	else:
@@ -164,7 +161,6 @@ def download_view(request, filename):
 					dformat = f
 					break
 
-	raise ValueError('Got '+dformat)
 
 def logout_view(request):
 	request.session.clear()
