@@ -1,4 +1,5 @@
 from contradict.formats.StenoDict import StenoDict
+import codecs
 
 class RtfDict(StenoDict):
 
@@ -25,6 +26,13 @@ class RtfDict(StenoDict):
 	def can_save_to_file(cls):
 		return True
 
+        @classmethod
+        def mime_type(cls):
+		# application/rtf appears to be more current than text/rtf:
+		# https://www.iana.org/assignments/media-types/media-types.xhtml
+		# And anyway, it describes what we're doing better.
+                return 'application/rtf'
+
 	@classmethod
 	def _rtf_escape(s):
 		for c in r'\{}':
@@ -33,17 +41,20 @@ class RtfDict(StenoDict):
 
 	@classmethod
 	def save_to_file(cls, filename, contents):
-		fh = open(filename, 'wb')
+		fh = codecs.open(filename, 'wb',
+			encoding="UTF-8")
 
 		fh.write(r'{\rtf1\ansi{\*\cxrev100}'+
 			r'\cxdict{\*\cxsystem contradict.marnanel.org}'+
 			r'{\stylesheet{\s0 Normal;}}'+
 			'\r\n')
 
-		for (key, value) in contents.enumerate():
-			fh.write(r'{\*\cxs %(steno)s}%(translation)s\r\n' % {
-				'key': key,
-				'value': value,
-				})
+		for (key, value) in contents.items():
+			fh.write(r'{\*\cxs %(steno)s}%(translation)s' % {
+				'steno': key,
+				'translation': value,
+				}+'\r\n')
 
-		fh.write(r'}\r\n')
+		fh.write(r'}'+'\r\n')
+		fh.close()
+
