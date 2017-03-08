@@ -2,3 +2,4 @@
 *.swo
 *.swp
 old/
+contradict/media/[0-9a-f]*
