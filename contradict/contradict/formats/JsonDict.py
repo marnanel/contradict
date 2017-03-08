@@ -45,6 +45,11 @@ class JsonDict(StenoDict):
 		return True
 
 	@classmethod
+	def mime_type(cls):
+		# https://www.iana.org/assignments/media-types/application/json
+		return 'application/json'
+
+	@classmethod
 	def save_to_file(cls, filename, contents):
 		f = codecs.open(filename, 'w', encoding='utf-8')
 		json.dump(contents, f,

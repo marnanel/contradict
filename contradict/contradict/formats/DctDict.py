@@ -116,5 +116,9 @@ class DctDict(StenoDict):
 		return False
 
 	@classmethod
+	def mime_type(cls):
+		return 'application/vnd.ms-access'
+
+	@classmethod
 	def save_to_file(cls, filename):
 		raise ValueError("Can't write to .dct dictionaries")
