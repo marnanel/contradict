@@ -1,9 +1,10 @@
-from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
-from .forms import DictionaryUploadForm
-from .settings import MEDIA_ROOT
 import os
 import random
+from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseRedirect
+from wsgiref.util import FileWrapper
+from contradict.settings import MEDIA_ROOT
+from contradict.forms import DictionaryUploadForm
 from contradict.formats.DctDict import DctDict
 from contradict.formats.JsonDict import JsonDict
 from contradict.formats.RtfDict import RtfDict
@@ -161,6 +162,42 @@ def download_view(request, filename):
 					dformat = f
 					break
 
+	if dformat is None:
+		return HttpResponseNotFound()
+
+	our_filename = _filestore_filename(request)
+
+	#########
+	# Make the copy that we'll send them.
+
+	temp_filename = our_filename + '-' + _random_filename()
+
+	if dformat==NORMALISED_FORMAT:
+		# Shortcut: if the format they want is the normalised format,
+		# we can just send them that file. We'll make a hard link
+		# so we don't have to remember not to delete it afterwards.
+
+		os.link(our_filename, temp_filename)
+	else:
+		contents = NORMALISED_FORMAT.load_from_file(our_filename)
+		dformat.save_to_file(temp_filename, contents)
+
+	#########
+	# Now we have the file, so let's send it to them.
+
+	response = HttpResponse(
+		content = FileWrapper(open(temp_filename, 'rb')),
+		content_type=dformat.mime_type())
+
+	# We can delete the temporary file, now that they have it open.
+	os.unlink(temp_filename)
+
+	# And they want to download it, rather than display it.
+	response['Content-Disposition'] = 'attachment; filename=%s' % (
+		filename,
+	)
+
+	return response
 
 def logout_view(request):
 	request.session.clear()
