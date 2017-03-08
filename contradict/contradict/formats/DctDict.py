@@ -6,7 +6,7 @@ import csv
 import sys
 from contradict.settings import MDB_EXPORT_BINARY
 
-DICTIONARY_TABLE_NAME = 'dictionwary'
+DICTIONARY_TABLE_NAME = 'dictionary'
 DICTIONARY_TABLE_COLUMNS = 'Steno,English,Flags,Date,TranCount,LastEditedDate'
 
 # This is steno-specific, so we want to rethink
@@ -91,7 +91,7 @@ class DctDict(StenoDict):
 
 		if first_line != DICTIONARY_TABLE_COLUMNS:
 			mdb_export.kill()
-			raise ValueError("The dictionary was not in the expected format.")
+			raise ValueError("The dictionary was not in the expected format. (Diagnostic: "+first_line+")")
 
 		input_dictionary = csv.reader(mdb_export.stdout)
 
