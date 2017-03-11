@@ -1,6 +1,29 @@
 # highly experimental code
 # partly based on: https://github.com/brianb/mdbtools/blob/master/src/libmdb/table.c
 
+class Detailed(object):
+	def __init__(self):
+		self._details = {}
+		self._gather_details()
+
+	def _gather_details(self):
+		pass
+
+	def __repr__(self):
+		result = '--- object of class %s ---\n' % (repr(self.__class__))
+		for (key, value) in self._details.items():
+			result += '%30s %s\n' % (key, value)
+
+		result += '--- ends ---\n'
+
+		return result
+
+	def __getitem__(self, key):
+		return self._details[key]
+
+	def __setitem__(self, key, value):
+		self._details[key] = value
+
 class Table(object):
 	def __init__(self, db, control_page):
 		self._db = db
@@ -65,6 +88,80 @@ class Table(object):
 			offset=offset,
 			length=length,
 			)
+
+class Page(Detailed):
+
+	def __init__(self, data, pagenumber=None, parent=None):
+
+		self._data = data
+		self._parent = parent
+		Detailed.__init__(self)
+		self['page_number'] = pagenumber
+
+	def _gather_details(self):
+		Detailed._gather_details(self)
+		self._details['type'] = 'page'
+
+	def get_int(self, offset=0, count=2):
+
+		cursor = offset
+
+		result = 0
+		for i in range(count):
+			addend = ord(self._data[cursor+i])
+			result += addend << (i*8)
+
+		return result
+
+	def get_string(self, offset, length):
+		return bytes.decode(self._data[offset:offset+length],
+					encoding='UTF-16')
+
+class TablePage(Page):
+
+	def _gather_details(self):
+		db = self._parent
+
+		self._details['type'] = 'table'
+		self._details['num_rows'] = self.get_int(db._tab_num_rows_offset, 4)
+		self._details['num_var_cols'] = self.get_int(db._tab_num_cols_offset-2, 2)
+		self._details['num_cols'] = self.get_int(db._tab_num_cols_offset, 2)
+		self._details['num_idxs'] = self.get_int(db._tab_num_idxs_offset, 4)
+		self._details['num_ridxs'] = self.get_int(db._tab_num_ridxs_offset, 4)
+		self._details['first_data_page'] = self.get_int(db._tab_num_ridxs_offset, 4)
+
+		# now pick up the columns
+
+		cursor = db._tab_cols_start_offset + (self._details['num_ridxs']*db._tab_ridx_entry_size)
+		print 'cursor:', cursor
+
+		for i in range(self['num_cols']):
+			print
+			print 'Column', i
+
+			print 'type', self.get_int(cursor, 1)
+			print 'var col number', self.get_int(cursor + db._col_num_offset, 2)
+			print 'row col number', self.get_int(cursor + db._tab_row_col_num_offset, 2)
+			print 'fixed offset', self.get_int(cursor + db._tab_col_offset_fixed, 2)
+
+			cursor += db._tab_col_entry_size
+
+		for i in range(self['num_cols']):
+			print
+			print 'Column name:', i
+
+			name_length = self.get_int(cursor, db._col_name_length_size)
+			print 'Length:', name_length
+			cursor += db._col_name_length_size
+
+			name = self.get_string(cursor, name_length)
+			print 'Name:', name
+
+			cursor += name_length
+
+PAGE_TYPES = {
+	2: TablePage,
+	}
 
 class Mdb(object):
 	def __init__(self, filename):
@@ -133,38 +230,23 @@ class Mdb(object):
 		self._tab_row_col_num_offset = 9
 		self._col_name_length_size = 2
 
-	def get_int(self, page, offset=0, count=2):
-
-		self._fh.seek(page*self._page_size + offset)
-
-		shift = 0
-
-		result = 0
-		for i in range(count):
-			addend = ord(self._fh.read(1))
-			result += addend << shift
-			shift += 8
-
-		return result
-
-	def get_string(self, page, offset, length):
-		self._fh.seek(page*self._page_size + offset)
-
-		return bytes.decode(self._fh.read(length),
-				encoding='UTF-16')
-
-	def _load_page(self, which):
-		self._fh.seek(self._page_size*which)
-		return self._fh.read(self._page_size)
-
 	def catalog(self):
 
 		return Table(db=self,
 			control_page=2)
 
+	def get_page(self, which):
+		self._fh.seek(self._page_size*which)
+		data = self._fh.read(self._page_size)
+
+		pageclass = PAGE_TYPES.get(ord(data[0]), Page)
+
+		return pageclass(data, which, self)
+
 def main():
 	mdb = Mdb('/tmp/stened.mdb')
-	mdb.catalog()
+	p2 = mdb.get_page(2)
+	print p2
 	
 if __name__=='__main__':
 	main()
