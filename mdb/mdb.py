@@ -89,6 +89,9 @@ class Table(object):
 			length=length,
 			)
 
+class Column(Detailed):
+	pass
+
 class Page(Detailed):
 
 	def __init__(self, data, pagenumber=None, parent=None):
@@ -136,27 +139,23 @@ class TablePage(Page):
 		print 'cursor:', cursor
 
 		for i in range(self['num_cols']):
-			print
-			print 'Column', i
 
-			print 'type', self.get_int(cursor, 1)
-			print 'var col number', self.get_int(cursor + db._col_num_offset, 2)
-			print 'row col number', self.get_int(cursor + db._tab_row_col_num_offset, 2)
-			print 'fixed offset', self.get_int(cursor + db._tab_col_offset_fixed, 2)
-
+			column = Column()
+			column['type'] = self.get_int(cursor, 1)
+			column['var_col'] = self.get_int(cursor + db._col_num_offset, 2)
+			column['row_col'] = self.get_int(cursor + db._tab_row_col_num_offset, 2)
+			column['fixed_offset'] = self.get_int(cursor + db._tab_col_offset_fixed, 2)
+			self[i] = column
 			cursor += db._tab_col_entry_size
 
+		# the names are stored last
+
 		for i in range(self['num_cols']):
-			print
-			print 'Column name:', i
 
 			name_length = self.get_int(cursor, db._col_name_length_size)
-			print 'Length:', name_length
 			cursor += db._col_name_length_size
 
-			name = self.get_string(cursor, name_length)
-			print 'Name:', name
-
+			self[i]['name'] = self.get_string(cursor, name_length)
 			cursor += name_length
 
 PAGE_TYPES = {
