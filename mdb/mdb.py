@@ -61,6 +61,7 @@ class TablePage(Page):
 		db = self._parent
 
 		self._details['type'] = 'table'
+		self._details['autoincrement'] = self.get_int(db._tab_autoincrement_offset, 4)
 		self._details['num_rows'] = self.get_int(db._tab_num_rows_offset, 4)
 		self._details['num_var_cols'] = self.get_int(db._tab_num_cols_offset-2, 2)
 		self._details['num_cols'] = self.get_int(db._tab_num_cols_offset, 2)
@@ -71,7 +72,6 @@ class TablePage(Page):
 		# now pick up the columns
 
 		cursor = db._tab_cols_start_offset + (self._details['num_ridxs']*db._tab_ridx_entry_size)
-		print 'cursor:', cursor
 
 		for i in range(self['num_cols']):
 
@@ -126,6 +126,7 @@ class Mdb(object):
 		self._page_size = 2048
 		self._row_count_offset = 0x08
 		self._tab_num_rows_offset = 12
+		self._tab_autoincrement_offset = 16
 		self._tab_num_cols_offset = 25
 		self._tab_num_idxs_offset = 27
 		self._tab_num_ridxs_offset = 31
@@ -147,6 +148,7 @@ class Mdb(object):
 		self._page_size = 4096
 		self._row_count_offset = 0x0c
 		self._tab_num_rows_offset = 16
+		self._tab_autoincrement_offset = 20
 		self._tab_num_cols_offset = 45
 		self._tab_num_idxs_offset = 47
 		self._tab_num_ridxs_offset = 51
