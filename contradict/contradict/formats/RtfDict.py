@@ -35,27 +35,5 @@ class RtfDict(StenoDict):
                 return 'application/rtf'
 
 	@classmethod
-	def _rtf_escape(s):
-		for c in r'\{}':
-			s = s.replace(c, '\\'+c)
-		return s
-
-	@classmethod
 	def save_to_file(cls, filename, contents):
-		fh = codecs.open(filename, 'wb',
-			encoding="UTF-8")
-
-		fh.write(r'{\rtf1\ansi{\*\cxrev100}'+
-			r'\cxdict{\*\cxsystem contradict.marnanel.org}'+
-			r'{\stylesheet{\s0 Normal;}}'+
-			'\r\n')
-
-		for (key, value) in contents.items():
-			fh.write(r'{\*\cxs %(steno)s}%(translation)s' % {
-				'steno': key,
-				'translation': value,
-				}+'\r\n')
-
-		fh.write(r'}'+'\r\n')
-		fh.close()
-
+		return rtfcre_dict.save_dictionary(contents, open(filename, 'wb'))
