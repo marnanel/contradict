@@ -39,6 +39,7 @@ def _find_format(request):
 	fh = open(_filestore_filename(request), 'rb')
 
 	for dformat in FORMATS:
+		fh.seek(0)
 		if dformat.can_handle(fh):
 			fh.close()
 			return dformat
