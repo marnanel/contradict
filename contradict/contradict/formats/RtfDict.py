@@ -1,5 +1,6 @@
 from contradict.formats.StenoDict import StenoDict
 import codecs
+import rtfcre_dict
 
 class RtfDict(StenoDict):
 
@@ -20,7 +21,7 @@ class RtfDict(StenoDict):
 
 	@classmethod
 	def load_from_file(cls, filename):
-		raise ValueError("rtf loading support is not yet implemented")
+		return rtfcre_dict.load_dictionary(filename)
 
 	@classmethod
 	def can_save_to_file(cls):
