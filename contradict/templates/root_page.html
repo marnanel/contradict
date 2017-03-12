@@ -33,12 +33,6 @@
 
 	<div class="col-md-9">
 
-{% if uploaded and our_id %}
-      <div class="alert alert-success" role="alert">
-	Dictionary uploaded!
-      </div>
-{% endif %}
-
 {% if deleted %}
       <div class="alert alert-danger" role="alert">
 	You <em>did</em> upload <b>{{ deleted }}</b>, but
@@ -62,7 +56,13 @@
 {% endif %}
 
 {% if our_id %}
+
+{% if uploaded %}
+      <div class="alert alert-success" role="alert">
+	Success!
+{% else %}
       <div class="alert alert-info" role="alert">
+{% endif %}
 You have uploaded: <b>{{ their_name }}</b>
 ({{ dict_size }} bytes).
 Format: {{ dict_format }}
