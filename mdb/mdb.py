@@ -74,6 +74,7 @@ class TablePage(Page):
 
 		cursor = db._tab_cols_start_offset + (self._details['num_ridxs']*db._tab_ridx_entry_size)
 
+		columns = []
 		for i in range(self['num_cols']):
 
 			column = Column()
@@ -83,7 +84,8 @@ class TablePage(Page):
 			column['number_bis'] = self.get_int(cursor+9, 2)
 			column['offset_F'] = self.get_int(cursor+22,2)
 			column['length'] = self.get_int(cursor+24,2)
-			self[i] = column
+			columns.append(column)
+
 			cursor += db._tab_col_entry_size
 
 		# the names are stored last
@@ -93,18 +95,18 @@ class TablePage(Page):
 			name_length = self.get_int(cursor, db._col_name_length_size)
 			cursor += db._col_name_length_size
 
-			self[i]['name'] = self.get_string(cursor, name_length)
+			columns[i]['name'] = self.get_string(cursor, name_length)
 			cursor += name_length
+
+		self._details['columns'] = sorted(columns,
+			key = lambda c: c['number'])
 
 class Table(object):
 	def __init__(self, control_page):
 		self._control_page = control_page
 
 	def columns(self):
-		result = []
-		for i in range(self._control_page['num_cols']):
-			result.append(self._control_page[i])
-		return result
+		return self._control_page['columns']
 
 	def __repr__(self):
 
