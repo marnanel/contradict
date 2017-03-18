@@ -78,9 +78,11 @@ class TablePage(Page):
 
 			column = Column()
 			column['type'] = self.get_int(cursor, 1)
-			column['var_col'] = self.get_int(cursor + db._col_num_offset, 2)
-			column['row_col'] = self.get_int(cursor + db._tab_row_col_num_offset, 2)
-			column['fixed_offset'] = self.get_int(cursor + db._tab_col_offset_fixed, 2)
+			column['number'] = self.get_int(cursor+5, 2)
+			column['offset_V'] = self.get_int(cursor+7, 2)
+			column['number_bis'] = self.get_int(cursor+9, 2)
+			column['offset_F'] = self.get_int(cursor+22,2)
+			column['length'] = self.get_int(cursor+24,2)
 			self[i] = column
 			cursor += db._tab_col_entry_size
 
@@ -94,10 +96,38 @@ class TablePage(Page):
 			self[i]['name'] = self.get_string(cursor, name_length)
 			cursor += name_length
 
+class Table(object):
+	def __init__(self, control_page):
+		self._control_page = control_page
+
+	def columns(self):
+		result = []
+		for i in range(self._control_page['num_cols']):
+			result.append(self._control_page[i])
+		return result
+
+	def __repr__(self):
+
+		def list_repr(l):
+			return ','.join(l)+'\n'
+
+		result = ''
+		result += list_repr([x['name'] for x in self.columns()])
+		return result
+
 class DataPage(Page):
+
+	def __init__(self, data, pagenumber=None, parent=None):
+		self._wrt = None
+		Page.__init__(self, data, pagenumber, parent)
+
+	def set_with_respect_to(self, wrt):
+		print 'WRT:', wrt
+		self._wrt = wrt
 
 	def _gather_details(self):
 		db = self._parent
+		wrt = self._wrt
 
 		self._details['type'] = 'data'
 		self._details['table'] = self.get_int(4, 4)
@@ -108,6 +138,24 @@ class DataPage(Page):
 		for i in range(self._details['count']):
 			self._details['offset_row'].append(self.get_int(cursor, 2))
 			cursor += 2
+
+		self._details['data'] = []
+		for offset in self._details['offset_row']:
+			if offset & 0x8000:
+				self._details['data'].append((offset, 'deleted'))
+				continue
+
+			if offset & 0x4000:
+				self._details['data'].append((offset, 'lookup nyi'))
+				continue
+
+			result = {
+				'at': offset,
+				'num_cols': self.get_int(offset, 2),
+			}
+
+			self._details['data'].append(result)
+
 
 PAGE_TYPES = {
 	1: DataPage,
@@ -200,8 +248,15 @@ class Mdb(object):
 
 def main():
 	mdb = Mdb('/tmp/stened.mdb')
-	for i in (0x16,0x17,0x18,0x19):
-		print mdb.get_page(i)
+	#for i in (0x16,0x17,0x18,0x19):
+	#	print mdb.get_page(i)
+	page = mdb.get_page(2)
+	print page
+	table = Table(page)
+
+	data = mdb.get_page(0xe)
+	data.set_with_respect_to(table)
+	print data
 	
 if __name__=='__main__':
 	main()
