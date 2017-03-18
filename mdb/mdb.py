@@ -81,9 +81,16 @@ class TablePage(Page):
 			column['type'] = self.get_int(cursor, 1)
 			column['number'] = self.get_int(cursor+5, 2)
 			column['offset_V'] = self.get_int(cursor+7, 2)
-			column['number_bis'] = self.get_int(cursor+9, 2)
-			column['offset_F'] = self.get_int(cursor+22,2)
-			column['length'] = self.get_int(cursor+24,2)
+			column['flags'] = self.get_int(cursor+15,1)
+			column['offset_F'] = self.get_int(cursor+21,2)
+			column['length'] = self.get_int(cursor+23,2)
+
+			for (bit, field) in (
+				(0x01, 'fixed'),
+				):
+
+				column[field] = bool(column['flags'] & bit)
+
 			columns.append(column)
 
 			cursor += db._tab_col_entry_size
@@ -119,21 +126,27 @@ class Table(object):
 
 class DataPage(Page):
 
-	def __init__(self, data, pagenumber=None, parent=None):
-		self._wrt = None
-		Page.__init__(self, data, pagenumber, parent)
+	def get_datum(self, offset, typecode):
+		if typecode==0x01:
+			return '(bool)' # not stored the same way
+		elif typecode==0x02:
+			return self.get_int(offset, 1)
+		elif typecode==0x03:
+			return self.get_int(offset, 2)
+		elif typecode==0x04:
+			return self.get_int(offset, 4)
+		else:
+			return '(?)'
 
-	def set_with_respect_to(self, wrt):
-		print 'WRT:', wrt
-		self._wrt = wrt
 
 	def _gather_details(self):
 		db = self._parent
-		wrt = self._wrt
 
 		self._details['type'] = 'data'
 		self._details['table'] = self.get_int(4, 4)
 		self._details['count'] = self.get_int(db._data_numrows_offset, 2)
+
+		wrt = Table(db.get_page(self._details['table']))
 
 		self._details['offset_row'] = []
 		cursor = db._data_numrows_offset + 2
@@ -142,6 +155,9 @@ class DataPage(Page):
 			cursor += 2
 
 		self._details['data'] = []
+
+		end_of_record = len(self._data)-1
+
 		for offset in self._details['offset_row']:
 			if offset & 0x8000:
 				self._details['data'].append((offset, 'deleted'))
@@ -156,7 +172,34 @@ class DataPage(Page):
 				'num_cols': self.get_int(offset, 2),
 			}
 
+			cursor = offset+2
+			columns = wrt.columns()
+
+			# all fixed columns first, in order
+			for column in columns:
+				if not column['fixed']:
+					continue
+				result[column['name']] = self.get_datum(cursor, column['type'])
+
+			null_mask_size = (len(columns)+7)/8
+			cursor = end_of_record-(null_mask_size+1)
+			var_len = self.get_int(cursor, 2)
+			result['var_len'] = var_len
+
+			# then all non-fixed columns, in order
+			# XXX we need to keep track of the end of the previous field
+			# XXX for decoding.
+			for column in columns:
+				if column['fixed']:
+					continue
+				result[column['name']] = cursor
+				cursor -= 2
+
 			self._details['data'].append(result)
+
+			# records are stored in reverse order.
+			# set end_of_record for the next time round.
+			end_of_record = offset-1
 
 
 PAGE_TYPES = {
@@ -252,12 +295,10 @@ def main():
 	mdb = Mdb('/tmp/stened.mdb')
 	#for i in (0x16,0x17,0x18,0x19):
 	#	print mdb.get_page(i)
-	page = mdb.get_page(2)
+	page = mdb.get_page(0x10)
 	print page
-	table = Table(page)
 
-	data = mdb.get_page(0xe)
-	data.set_with_respect_to(table)
+	data = mdb.get_page(0x16)
 	print data
 	
 if __name__=='__main__':
