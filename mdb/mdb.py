@@ -61,6 +61,7 @@ class TablePage(Page):
 		db = self._parent
 
 		self._details['type'] = 'table'
+		self._details['next'] = self.get_int(4, 4)
 		self._details['autoincrement'] = self.get_int(db._tab_autoincrement_offset, 4)
 		self._details['num_rows'] = self.get_int(db._tab_num_rows_offset, 4)
 		self._details['num_var_cols'] = self.get_int(db._tab_num_cols_offset-2, 2)
@@ -93,7 +94,23 @@ class TablePage(Page):
 			self[i]['name'] = self.get_string(cursor, name_length)
 			cursor += name_length
 
+class DataPage(Page):
+
+	def _gather_details(self):
+		db = self._parent
+
+		self._details['type'] = 'data'
+		self._details['table'] = self.get_int(4, 4)
+		self._details['count'] = self.get_int(db._data_numrows_offset, 2)
+
+		self._details['offset_row'] = []
+		cursor = db._data_numrows_offset + 2
+		for i in range(self._details['count']):
+			self._details['offset_row'].append(self.get_int(cursor, 2))
+			cursor += 2
+
 PAGE_TYPES = {
+	1: DataPage,
 	2: TablePage,
 	}
 
@@ -143,6 +160,7 @@ class Mdb(object):
 		self._tab_col_offset_fixed = 14
 		self._tab_row_col_num_offset = 5
 		self._col_name_length_size = 1
+		self._data_numrows_offset = 8
 
 	def _set_Jet4_constants(self):
 		self._page_size = 4096
@@ -165,6 +183,7 @@ class Mdb(object):
 		self._tab_col_offset_fixed = 21
 		self._tab_row_col_num_offset = 9
 		self._col_name_length_size = 2
+		self._data_numrows_offset = 12
 
 	def catalog(self):
 
@@ -181,8 +200,8 @@ class Mdb(object):
 
 def main():
 	mdb = Mdb('/tmp/stened.mdb')
-	p2 = mdb.get_page(2)
-	print p2
+	for i in (0x16,0x17,0x18,0x19):
+		print mdb.get_page(i)
 	
 if __name__=='__main__':
 	main()
