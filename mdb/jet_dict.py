@@ -20,6 +20,11 @@ COLUMNS_START_OFFSET = 63
 # Data pages:
 CONTROLLING_TABLE_OFFSET = 4
 ROW_COUNT_OFFSET = 12
+ROW_TABLE_OFFSET = 14
+
+# Types of columns:
+COLUMN_TYPE_TEXT = 10
+COLUMN_TYPE_INT = 3
 
 SIZE_TO_FORMAT = {
 	1: "<B",
@@ -116,7 +121,25 @@ class JetDictionary(object):
 				controlling_table = self.get_int(CONTROLLING_TABLE_OFFSET, 4)
 				if controlling_table==self._control['page']:
 					row_count = self.get_int(ROW_COUNT_OFFSET, 2)
-					print row_count
+
+					print '----', page
+					end_of_record = PAGE_SIZE-1
+					for i in range(row_count):
+						start_of_record = self.get_int(ROW_TABLE_OFFSET+i*2, 2)
+
+						if start_of_record & 0xC000:
+							# the flags are:
+							#  0x8000 = deleted row
+							#  0x4000 = reference to another data page,
+							#             which we're going to find and
+							#             read anyway
+							# If either is set, ignore this record
+							continue
+
+						print hex(start_of_record), hex(end_of_record)
+
+						# Records are stored backwards.
+						end_of_record = start_of_record-1
 
 			page += 1
 
