@@ -138,6 +138,16 @@ class JetDictionary(object):
 
 						print hex(start_of_record), hex(end_of_record)
 
+						field_count = self.get_int(start_of_record, 1)
+						nullmask_size = (field_count+7)/8
+						variable_field_count = self.get_int(end_of_record - (nullmask_size+1), 2)
+						variable_fields_offset = end_of_record - (nullmask_size+1+variable_field_count*2)
+
+						print field_count, variable_field_count, variable_fields_offset
+						for j in range(variable_field_count):
+							offset = self.get_int(variable_fields_offset+j*2, 2)
+							print 'Offset:', offset
+
 						# Records are stored backwards.
 						end_of_record = start_of_record-1
 
