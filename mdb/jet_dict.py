@@ -147,8 +147,9 @@ class JetDictionary(object):
 						for j in range(variable_field_count):
 							start_of_field = self.get_int(variable_fields_offset+j*2, 2)
 							try:
-								var_data.append(self.get_string(start_of_field+start_of_record,
-									(end_of_field-start_of_field)+1))
+								var_data.insert(0,
+									self.get_string(start_of_field+start_of_record,
+										(end_of_field-start_of_field)+1))
 							except Exception, e:
 								print repr(e)
 							end_of_field = start_of_field-1
@@ -157,9 +158,9 @@ class JetDictionary(object):
 
 						for field in USEFUL_COLUMNS:
 							schema = self._control[field]
+							offset = schema['offset_V']
 							if schema['type']==COLUMN_TYPE_TEXT:
-								# XXX offset_V is stored backwards FIXME
-								result[field] = var_data[schema['offset_V']]
+								result[field] = var_data[offset]
 							else:
 								result[field] = '(nyi)'
 
