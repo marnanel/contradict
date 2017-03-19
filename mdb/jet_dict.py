@@ -122,11 +122,9 @@ class JetDictionary(object):
 				if controlling_table==self._control['page']:
 					row_count = self.get_int(ROW_COUNT_OFFSET, 2)
 
-					print '----', page, 'has', row_count
 					end_of_record = PAGE_SIZE-1
 					for i in range(row_count):
 						start_of_record = self.get_int(ROW_TABLE_OFFSET+i*2, 2)
-						print '-- #', i, 'from', hex(start_of_record), 'to', hex(end_of_record)
 
 						if start_of_record & 0x8000:
 							#  0x8000 = deleted row
@@ -143,16 +141,29 @@ class JetDictionary(object):
 						variable_field_count = self.get_int(end_of_record - (nullmask_size+1), 2)
 						variable_fields_offset = end_of_record - (nullmask_size+1+variable_field_count*2)
 
-						print field_count, variable_field_count, variable_fields_offset
 						end_of_field = (variable_fields_offset - start_of_record)-3
+
+						var_data = []
 						for j in range(variable_field_count):
 							start_of_field = self.get_int(variable_fields_offset+j*2, 2)
 							try:
-								print self.get_string(start_of_field+start_of_record,
-									(end_of_field-start_of_field)+1)
+								var_data.append(self.get_string(start_of_field+start_of_record,
+									(end_of_field-start_of_field)+1))
 							except Exception, e:
 								print repr(e)
 							end_of_field = start_of_field-1
+
+						result = {}
+
+						for field in USEFUL_COLUMNS:
+							schema = self._control[field]
+							if schema['type']==COLUMN_TYPE_TEXT:
+								# XXX offset_V is stored backwards FIXME
+								result[field] = var_data[schema['offset_V']]
+							else:
+								result[field] = '(nyi)'
+
+						print 'Result:', result
 
 						# Records are stored backwards.
 						end_of_record = start_of_record-1
