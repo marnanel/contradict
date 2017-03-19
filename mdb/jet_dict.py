@@ -158,11 +158,10 @@ class JetDictionary(object):
 
 						for field in USEFUL_COLUMNS:
 							schema = self._control[field]
-							offset = schema['offset_V']
 							if schema['type']==COLUMN_TYPE_TEXT:
-								result[field] = var_data[offset]
+								result[field] = var_data[schema['offset_V']]
 							else:
-								result[field] = '(nyi)'
+								result[field] = self.get_int(schema['offset_F'] + start_of_record + 2)
 
 						print 'Result:', result
 
