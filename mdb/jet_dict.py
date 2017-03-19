@@ -39,9 +39,6 @@ class JetDictionary(object):
 		self._fh = open(filename, 'rb')
 
 		self._control = self._find_control()
-		print 'Control:', self._control
-
-		self._find_data()
 
 	def _find_control(self):
 		# First we need to find the control page for the Dictionary table.
@@ -101,7 +98,7 @@ class JetDictionary(object):
 
 			page += 1
 
-	def _find_data(self):
+	def data(self):
 
 		# I suspect that data pages can't occur before the
 		# corresponding control page, but I don't know
@@ -163,7 +160,7 @@ class JetDictionary(object):
 							else:
 								result[field] = self.get_int(schema['offset_F'] + start_of_record + 2)
 
-						print 'Result:', result
+						yield result
 
 						# Records are stored backwards.
 						end_of_record = start_of_record-1
@@ -192,5 +189,6 @@ class JetDictionary(object):
 		self._page = self._fh.read(PAGE_SIZE)
 
 if __name__=='__main__':
-	print JetDictionary('/tmp/stened.dct')
+	for row in JetDictionary('/tmp/stened.dct').data():
+		print 'got:', row
 
