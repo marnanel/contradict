@@ -136,17 +136,21 @@ class JetDictionary(object):
 							# If either is set, ignore this record
 							continue
 
-						print hex(start_of_record), hex(end_of_record)
-
 						field_count = self.get_int(start_of_record, 1)
 						nullmask_size = (field_count+7)/8
 						variable_field_count = self.get_int(end_of_record - (nullmask_size+1), 2)
 						variable_fields_offset = end_of_record - (nullmask_size+1+variable_field_count*2)
 
 						print field_count, variable_field_count, variable_fields_offset
+						end_of_field = (variable_fields_offset - start_of_record)-3
 						for j in range(variable_field_count):
-							offset = self.get_int(variable_fields_offset+j*2, 2)
-							print 'Offset:', offset
+							start_of_field = self.get_int(variable_fields_offset+j*2, 2)
+							try:
+								print self.get_string(start_of_field+start_of_record,
+									(end_of_field-start_of_field)+1)
+							except Exception, e:
+								print repr(e)
+							end_of_field = start_of_field-1
 
 						# Records are stored backwards.
 						end_of_record = start_of_record-1
@@ -159,7 +163,10 @@ class JetDictionary(object):
 
 	def get_string(self, offset=0, length=0):
 		encoded = self._page[offset:offset+length]
-		return bytes.decode(encoded, encoding='UTF-16')
+		try:
+			return bytes.decode(encoded, encoding='UTF-16')
+		except Exception, e:
+			return repr(e)
 
 	def _load_page(self, page_number):
 		self._fh.seek(page_number*PAGE_SIZE)
