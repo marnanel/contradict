@@ -122,18 +122,20 @@ class JetDictionary(object):
 				if controlling_table==self._control['page']:
 					row_count = self.get_int(ROW_COUNT_OFFSET, 2)
 
-					print '----', page
+					print '----', page, 'has', row_count
 					end_of_record = PAGE_SIZE-1
 					for i in range(row_count):
 						start_of_record = self.get_int(ROW_TABLE_OFFSET+i*2, 2)
+						print '-- #', i, 'from', hex(start_of_record), 'to', hex(end_of_record)
 
-						if start_of_record & 0xC000:
-							# the flags are:
+						if start_of_record & 0x8000:
 							#  0x8000 = deleted row
-							#  0x4000 = reference to another data page,
+							continue
+						elif start_of_record & 0x4000:
+							#  0x4000 = 4-byte reference to another data page,
 							#             which we're going to find and
 							#             read anyway
-							# If either is set, ignore this record
+							end_of_record -= 4
 							continue
 
 						field_count = self.get_int(start_of_record, 1)
@@ -159,7 +161,11 @@ class JetDictionary(object):
 
 	def get_int(self, offset=0, size=2):
 		encoded = self._page[offset:offset+size]
-		return struct.unpack(SIZE_TO_FORMAT[size], encoded)[0]
+		try:
+			return struct.unpack(SIZE_TO_FORMAT[size], encoded)[0]
+		except Exception, e:
+			print repr(e)
+			return 0
 
 	def get_string(self, offset=0, length=0):
 		encoded = self._page[offset:offset+length]
