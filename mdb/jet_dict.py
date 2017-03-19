@@ -98,7 +98,7 @@ class JetDictionary(object):
 
 			page += 1
 
-	def data(self):
+	def __iter__(self):
 
 		# I suspect that data pages can't occur before the
 		# corresponding control page, but I don't know
@@ -189,6 +189,6 @@ class JetDictionary(object):
 		self._page = self._fh.read(PAGE_SIZE)
 
 if __name__=='__main__':
-	for row in JetDictionary('/tmp/stened.dct').data():
+	for row in JetDictionary('/tmp/stened.dct'):
 		print 'got:', row
 
