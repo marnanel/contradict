@@ -188,7 +188,15 @@ class JetDictionary(object):
 		self._fh.seek(page_number*PAGE_SIZE)
 		self._page = self._fh.read(PAGE_SIZE)
 
+class StenoAdapter(object):
+	def __init__(self, source):
+		self._source = source
+
+	def __iter__(self):
+		for row in self._source:
+			yield row
+
 if __name__=='__main__':
-	for row in JetDictionary('/tmp/stened.dct'):
+	for row in StenoAdapter(JetDictionary('/tmp/stened.dct')):
 		print 'got:', row
 
