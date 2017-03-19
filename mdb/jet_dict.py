@@ -182,6 +182,8 @@ class JetDictionary(object):
 	def get_string(self, offset=0, length=0):
 		encoded = self._page[offset:offset+length]
 		try:
+			# XXX Jet4 has a weird compression thing going on;
+			# XXX we have to handle that but we don't yet. FIXME
 			return bytes.decode(encoded, encoding='UTF-16')
 		except Exception, e:
 			return repr(e)
