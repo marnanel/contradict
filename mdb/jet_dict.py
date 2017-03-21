@@ -1,6 +1,7 @@
 # Stripped-down Jet (MDB) reader for Plover.
 
 import struct
+import glob
 
 DATA_PAGE_TYPE = 1
 TABLE_CONTROL_PAGE_TYPE = 2
@@ -236,9 +237,27 @@ class StenoAdapter(object):
 
 	def __iter__(self):
 		for row in self._source:
-			row['Steno'] = _decode_steno(row['Steno'])
-			yield row
+
+			steno = _decode_steno(row['Steno'])
+			translation = row['English']
+			flags = row['Flags']
+
+			# FIXME: obviously these aren't really the
+			# FIXME: Plover equivalents
+			if flags & 0x8000:
+				translation = '<suffix>'+translation
+			if flags % 0x4000:
+				translation += '<prefix>'
+			if flags % 0x2000:
+				translation += 'CAP UP'
+
+			yield (steno, translation)
 
 if __name__=='__main__':
-	for row in StenoAdapter(JetDictionary('/tmp/stened.dct')):
-		print 'got:', row
+	for filename in glob.glob("/home/marnanel/proj/plover-dic/old/dictionaries/*.dct"):
+		print filename
+		count = 0
+		for row in StenoAdapter(JetDictionary(filename)):
+			count += 1
+			if count==100: print 'goti 100:', row
+		print 'total:', count
