@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # Stripped-down Jet (MDB) reader for Plover.
 
 import struct
@@ -135,7 +136,7 @@ class JetDictionary(object):
 							continue
 
 						field_count = self.get_int(start_of_record, 1)
-						nullmask_size = (field_count+7)/8
+						nullmask_size = (field_count+7)//8
 						variable_field_count = self.get_int(end_of_record - (nullmask_size+1), 2)
 						variable_fields_offset = end_of_record - (nullmask_size+1+variable_field_count*2)
 
@@ -144,12 +145,9 @@ class JetDictionary(object):
 						var_data = []
 						for j in range(variable_field_count):
 							start_of_field = self.get_int(variable_fields_offset+j*2, 2)
-							try:
-								var_data.insert(0,
-									self.get_string(start_of_field+start_of_record,
-										(end_of_field-start_of_field)+1))
-							except Exception, e:
-								print repr(e)
+							var_data.insert(0,
+								self.get_string(start_of_field+start_of_record,
+									(end_of_field-start_of_field)+1))
 							end_of_field = start_of_field-1
 
 						result = {}
@@ -170,20 +168,20 @@ class JetDictionary(object):
 
 	def get_int(self, offset=0, size=2):
 		encoded = self._page[offset:offset+size]
-		try:
-			return struct.unpack(SIZE_TO_FORMAT[size], encoded)[0]
-		except Exception, e:
-			print repr(e)
-			return 0
+		return struct.unpack(SIZE_TO_FORMAT[size], encoded)[0]
 
 	def get_string(self, offset=0, length=0):
 		encoded = self._page[offset:offset+length]
-		try:
-			# XXX Jet4 has a weird compression thing going on;
-			# XXX we have to handle that but we don't yet. FIXME
-			return bytes.decode(encoded, encoding='UTF-16')
-		except Exception, e:
-			return repr(e)
+
+		if encoded[0:1]==(0xff, 0xfe):
+			# FIXME: Jet4 has a weird optional string compression
+			# thing going on; in theory we have to handle that, but we
+			# don't yet. I've never encountered it in .dct files.
+			# See https://github.com/brianb/mdbtools/blob/master/HACKING
+			# at the end of the document for details.
+			raise ValueError("compressed string handling is not yet implemented")
+
+		return bytes.decode(encoded, encoding='UTF-16')
 
 	def _load_page(self, page_number):
 		self._fh.seek(page_number*PAGE_SIZE)
@@ -255,9 +253,9 @@ class StenoAdapter(object):
 
 if __name__=='__main__':
 	for filename in glob.glob("/home/marnanel/proj/plover-dic/old/dictionaries/*.dct"):
-		print filename
+		print(filename)
 		count = 0
 		for row in StenoAdapter(JetDictionary(filename)):
 			count += 1
-			if count==100: print 'goti 100:', row
-		print 'total:', count
+			if count==100: print('got 100:', row)
+		print('total:', count)
